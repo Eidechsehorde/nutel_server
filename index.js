@@ -9,7 +9,18 @@ const bodyParser = require('body-parser');
 
 const modules = {};
 
-modules.users = require('./modules/funcionarios');
+modules.func = require('./modules/funcionarios');
+modules.cli = require('./modules/clientes');
+modules.quar = require('./modules/quartos');
+modules.buscas = require('./modules/buscas');
+
+const rotas = {};
+
+rotas.funcionario = require('./routes/funcionario');
+rotas.busca = require('./routes/busca');
+rotas.limpa = require('./routes/limpa');
+rotas.quartoalugado = require('./routes/quartoalugado');
+rotas.cliente = require('./routes/cliente');
 
 const app = express();
 const server = http.createServer(app);
@@ -33,7 +44,7 @@ mysql(process.argv[2]).then(
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
-
+app.use(rotas.funcionario);
 app.use(function(req,res,next){
     if(!db)
       return res.json({error: "Error stablishing database connection"});
@@ -44,32 +55,41 @@ app.use(function(req,res,next){
 
 //ENDPOINTS
 
+//ROTAS
+app.use('/func',rotas.funcionario);
+app.use('/busca',rotas.busca);
+app.use('/limpa',rotas.limpa);
+app.use('/quartoalugado',rotas.quartoalugado);
+app.use('/cli',rotas.cliente);
+
 //GET
-app.get('/users', modules.users.getAll);
-
-app.get('/func/:ssn/:cpf/:senha/:nome/:rg/:telefone/:sexo/:datanasc/:cargo',function(req,res){
-  let query = "insert into `funcionario` values ('ssn','cpf','senha','nome','rg','telefone','sexo','datanasc','cargo');";
-  query = query.replace('ssn',req.params.ssn);
-  query = query.replace('cpf',req.params.cpf);
-  query = query.replace('senha',req.params.senha);
-  query = query.replace('nome',req.params.nome);
-  query = query.replace('rg',req.params.rg);
-  query = query.replace('telefone',req.params.telefone);
-  query = query.replace('sexo',req.params.sexo);
-  query = query.replace('datanasc',req.params.datanasc);
-  query = query.replace('cargo',req.params.cargo);
-  console.log(query);
-  req.dbEntity.query(query, function(err, result){
-    if(err)
-      return res.json(err);
-    return res.json(result);
-  });
+//FUNCIONARIO
+//Consultar todos os func
+app.get('/',function(req,res) {
+  res.json("Welcome to Nutel API");
 });
 
-server.listen(3000,'127.0.0.1',function(){
-  server.close(function(){
-    server.listen(8002,'192.168.15.102');
-  })
-});
+//Todos os recepcionistas homens
+app.get('/recepcionistas/homens',modules.buscas.allMaleHostess);
+//Todos os recepcionistas mulheres
+app.get('/recepcionistas/mulheres',modules.buscas.allFemaleHostess);
+//Todos os vigias noturnos
+app.get('/vigias/noturno',modules.buscas.allNightWatchman);
+//Todos os func aniversariantes do mes 3
+app.get('/marconiver',modules.buscas.allEmployeesMarchBirth);
+
+//QUARTO
+//Inserir quarto
+app.get('/quarto/:num/:valor/:camas/:andar',modules.quar.insertOne);
+//Consultar todos os quartos
+app.get('/quarto/all',modules.quar.getAll);
+
+//QUARTO ALUGADO
+//Total gasto por cliente especifico por Ano
+app.get('/analitycs/lucro/cliente/:nome',modules.buscas.totalSpentByClientPerYear);
+//Total de lucro por Ano
+app.get('/analitycs/profit/year',modules.buscas.totalProfitByYear);
+
+server.listen(3000,'127.0.0.1');
 
 console.log("Server running on port 3000");
