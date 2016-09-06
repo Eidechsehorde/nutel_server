@@ -6,7 +6,7 @@ const md5 = require('md5');
 module.exports = {
   insertOne : function(req,res){
     let query = "insert into `funcionario` values ('ssn','cpf','senha','nome','rg','telefone','sexo','datanasc','cargo');";
-    let query2 = "update vigia set turno = 'dado' where ssn_vig = 'dado2';"
+    let query2 = "update vigia set turno = 'dado' where ssn_vig = 'dado2';";
     query = query.replace('ssn',req.params.ssn);
     query = query.replace('cpf',req.params.cpf);
     query = query.replace('senha',req.params.senha);
@@ -21,9 +21,10 @@ module.exports = {
       var erro = {};
       if(err)
         return res.json(err);
-      if(req.params.cargo == 'vigia'){
+      if(req.params.cargo === 'vigia'){
             query2 = query2.replace('dado',req.params.turno);
             query2 = query2.replace('dado2',req.params.ssn);
+            console.log(query2);
             req.dbEntity.query(query2,function(err,result){
               if(err)
                 erro.vigia = err;
@@ -40,11 +41,9 @@ module.exports = {
     let query = "select cpf_func from funcionario where cpf_func = 'cpfs' and senha_func = 'senhas';"
     query = query.replace('cpfs', req.params.cpf);
     query = query.replace('senhas',req.params.senha);
-    console.log(query);
     req.dbEntity.query(query,function(err,result){
       if(err)
         return res.json(err);
-        console.log(result);
       return res.json(result);
     });
   },

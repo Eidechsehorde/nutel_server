@@ -21,17 +21,15 @@ rotas.busca = require('./routes/busca');
 rotas.limpa = require('./routes/limpa');
 rotas.quartoalugado = require('./routes/quartoalugado');
 rotas.cliente = require('./routes/cliente');
+rotas.buscas2 = require('./routes/buscas2');
 
 const app = express();
 const server = http.createServer(app);
 
 //DB config/init
 var db = false;
-process.argv.forEach((val, index) => {
-  console.log(`${index}: ${val}`);
-});
 
-mysql(process.argv[2]).then(
+mysql('1234').then(
   function(data){
     db = data;
   }, function(error){
@@ -61,6 +59,7 @@ app.use('/busca',rotas.busca);
 app.use('/limpa',rotas.limpa);
 app.use('/quartoalugado',rotas.quartoalugado);
 app.use('/cli',rotas.cliente);
+app.use('/buscas2',rotas.buscas2);
 
 //GET
 //FUNCIONARIO
@@ -90,6 +89,6 @@ app.get('/analitycs/lucro/cliente/:nome',modules.buscas.totalSpentByClientPerYea
 //Total de lucro por Ano
 app.get('/analitycs/profit/year',modules.buscas.totalProfitByYear);
 
-server.listen(3000,'127.0.0.1');
+server.listen(3000,process.argv[2]);
 
 console.log("Server running on port 3000");

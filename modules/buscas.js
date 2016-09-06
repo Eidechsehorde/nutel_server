@@ -5,7 +5,7 @@ const md5 = require('md5');
 
 module.exports = {
   allMaleHostess : function(req,res){
-    let query = "select * from funcionario where cargo_func = 'recepcionista' and sexo_func = 'masculino';";
+    let query = "select nome_func,ssn_func,cpf_func,rg_func,cargo_func,sexo_func,telefone,date_format(datanasc_func,'%e/%m/%Y') as datanasc_func from funcionario where cargo_func = 'recepcionista' and sexo_func = 'masculino';";
     req.dbEntity.query(query,function(err,result){
       if(err)
         return res.json(err);
@@ -13,7 +13,7 @@ module.exports = {
     });
   },
   allFemaleHostess : function(req,res){
-    let query = "select * from funcionario where cargo_func = 'recepcionista' and sexo_func = 'feminino';";
+    let query = "select nome_func,ssn_func,cpf_func,rg_func,cargo_func,sexo_func,telefone,date_format(datanasc_func,'%e/%m/%Y') as datanasc_func from funcionario where cargo_func = 'recepcionista' and sexo_func = 'feminino';";
     req.dbEntity.query(query,function(err,result){
       if(err)
         return res.json(err);
@@ -21,7 +21,7 @@ module.exports = {
     });
   },
   allNightWatchman : function(req,res){
-    let query = "select nome_func,cpf_func from vigia,funcionario where ssn_func = ssn_vig and turno = 'noturno';";
+    let query = "select nome_func,ssn_func,cpf_func,rg_func,cargo_func,sexo_func,telefone,date_format(datanasc_func,'%e/%m/%Y') as datanasc_func from vigia,funcionario where ssn_func = ssn_vig and turno = 'noturno';";
     req.dbEntity.query(query,function(err,result){
       if(err)
         return res.json(err);
@@ -78,7 +78,63 @@ module.exports = {
       return res.json(result);
     });
   },
-  hostessRentAllRooms : function(req,res){
-    let query = "select ssn_rec from recepcionista where not exists ((select num_quarto from quarto) minus ())"
-  }
+  clientsRentAllRooms : function(req,res){
+    let query = `select nome_cli,cpf_cli
+                  from quarto_alugado, cliente
+                  where num_quarto_aluga in (select num_quarto from quarto) and cpf_cli = cpf_cli_aluga
+                  group by cpf_cli_aluga
+                  having count(distinct num_quarto_aluga) = (select count(*) from quarto);`;
+    req.dbEntity.query(query,function(err,result) {
+      if(err)
+        return res.json(err);
+      return res.json(result);
+    });
+  },
+  clientsRentAllRoomsYear : function(req,res){
+    let query = `select nome_cli,cpf_cli
+                  from quarto_alugado, cliente
+                  where num_quarto_aluga in (select num_quarto from quarto) and cpf_cli = cpf_cli_aluga and extract(year from datanasc_cli) > '1990'
+                  group by cpf_cli_aluga
+                  having count(distinct num_quarto_aluga) = (select count(*) from quarto);`;
+    req.dbEntity.query(query,function(err,result) {
+      if(err)
+        return res.json(err);
+      return res.json(result);
+    });
+  },
+  clientsRentAllRoomsMatheus : function(req,res){
+    let query = `select nome_cli,cpf_cli
+                  from quarto_alugado, clientes_at_matheus
+                  where num_quarto_aluga in (select num_quarto from quarto) and cpf_cli = cpf_cli_aluga
+                  group by cpf_cli_aluga
+                  having count(distinct num_quarto_aluga) = (select count(*) from quarto);`;
+    req.dbEntity.query(query,function(err,result) {
+      if(err)
+        return res.json(err);
+      return res.json(result);
+    });
+  },
+  averageSpentByAllClients : function(req,res){
+    let query = `select avg(total) as \`Média\`
+                  from (select nome_cli,sum(valor) as total from \`Total Gasto Aluguel\` group by nome_cli) as totalgastocli;`;
+    req.dbEntity.query(query,function(err,result) {
+      if(err)
+        return res.json(err);
+      return res.json(result);
+    });
+  },
+  clientMaxDays : function(req,res) {
+    let query = `select nome_cli,max(total_dias) as \`Total de dias\`
+                  from (select nome_cli,cpf_cli_aluga,sum(total_dias_aluguel) as total_dias
+                  		from (select cpf_cli_aluga, datediff(data_saida,data_entrada) as total_dias_aluguel
+                  				from quarto_alugado) as A, cliente
+                  		where cpf_cli = cpf_cli_aluga
+                  		group by cpf_cli_aluga) as B;`;
+    req.dbEntity.query(query,function(err,result) {
+      if(err)
+        return res.json(err);
+      return res.json(result);
+    });
+  },
+
 }

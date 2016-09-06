@@ -25,4 +25,14 @@ router.get('/gasto/clienteporano',buscas.totalSpentByClientPerYear);
 
 router.get('/lucro/porano',buscas.totalProfitByYear);
 
+router.get('/cli/todosquartos',buscas.clientsRentAllRooms);
+
+router.get('/cli/1990/todosquartos',buscas.clientsRentAllRoomsYear);
+
+router.get('/cli/todosquartos/matheus',buscas.clientsRentAllRoomsMatheus);
+
+router.get('/gasto/mediacli',buscas.averageSpentByAllClients);
+
+router.get('/cli/maxdias',buscas.clientMaxDays);
+
 module.exports = router;
