@@ -89,6 +89,6 @@ app.get('/analitycs/lucro/cliente/:nome',modules.buscas.totalSpentByClientPerYea
 //Total de lucro por Ano
 app.get('/analitycs/profit/year',modules.buscas.totalProfitByYear);
 
-server.listen(3000,process.argv[2]);
+server.listen(3000);
 
 console.log("Server running on port 3000");
